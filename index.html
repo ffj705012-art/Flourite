@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Flourite Panel</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
+:root{
+    --accent:#ff531b;
+    --panel:#0e1116;
+    --panel2:#11151b;
+    --card:#14181e;
+    --border:#292e37;
+    --text:#fff;
+    --muted:#737b86;
+}
+html,body{width:100%;height:100%}
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at 15% 15%,#20252d 0%,transparent 35%),
+        radial-gradient(circle at 85% 80%,#161a20 0%,transparent 38%),
+        #07090c;
+    color:var(--text);
+    overflow:hidden;
+    touch-action:none;
+}
+.open-btn{
+    position:fixed;right:20px;bottom:20px;
+    width:58px;height:58px;border:0;border-radius:50%;
+    background:linear-gradient(135deg,#ff7234,#ff3e0e);
+    color:white;font-size:22px;cursor:pointer;
+    box-shadow:0 0 28px rgba(255,83,27,.45);
+    z-index:999;transition:.2s;
+}
+.open-btn:hover{transform:scale(1.08)}
+.panel{
+    position:absolute;left:50%;top:50%;
+    transform:translate(-50%,-50%);
+    width:min(920px,94vw);height:570px;
+    background:var(--panel);
+    border:2px solid var(--border);
+    border-radius:18px;overflow:hidden;display:flex;
+    box-shadow:0 30px 100px rgba(0,0,0,.78),0 0 45px rgba(255,83,27,.08);
+    transition:opacity .22s,transform .22s,height .22s,box-shadow .22s;
+    z-index:100;
+}
+.panel.hidden{opacity:0;pointer-events:none;transform:translate(-50%,-45%) scale(.96)}
+.panel.minimized{height:64px}
+.panel.rainbow{
+    animation:rainbowBorder 4s linear infinite;
+}
+@keyframes rainbowBorder{
+    0%{border-color:#ff2b2b;box-shadow:0 30px 100px rgba(0,0,0,.78),0 0 30px rgba(255,43,43,.22)}
+    16%{border-color:#ff9d00;box-shadow:0 30px 100px rgba(0,0,0,.78),0 0 30px rgba(255,157,0,.22)}
+    32%{border-color:#fff000;box-shadow:0 30px 100px rgba(0,0,0,.78),0 0 30px rgba(255,240,0,.22)}
+    48%{border-color:#23e66d;box-shadow:0 30px 100px rgba(0,0,0,.78),0 0 30px rgba(35,230,109,.22)}
+    64%{border-color:#20d8ff;box-shadow:0 30px 100px rgba(0,0,0,.78),0 0 30px rgba(32,216,255,.22)}
+    80%{border-color:#865cff;box-shadow:0 30px 100px rgba(0,0,0,.78),0 0 30px rgba(134,92,255,.22)}
+    100%{border-color:#ff2b9d;box-shadow:0 30px 100px rgba(0,0,0,.78),0 0 30px rgba(255,43,157,.22)}
+}
+.header{
+    position:absolute;left:0;right:0;top:0;height:64px;
+    background:var(--panel2);border-bottom:1px solid #292e37;
+    display:flex;align-items:center;padding:0 18px;
+    cursor:move;z-index:10;user-select:none;
+    touch-action:none;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{
+    width:37px;height:37px;border-radius:10px;
+    background:linear-gradient(135deg,#ff7c38,#ff3d0d);
+    display:grid;place-items:center;font-weight:900;
+    box-shadow:0 0 18px rgba(255,83,27,.30)
+}
+.brand strong{font-size:16px;letter-spacing:1.5px}
+.brand small{display:block;color:#69717c;font-size:9px;margin-top:3px}
+.header-actions{margin-left:auto;display:flex;gap:7px}
+.header-actions button{
+    width:32px;height:32px;border:1px solid #2a3038;
+    background:#181c22;color:#9da4ad;border-radius:7px;
+    cursor:pointer;font-size:15px;transition:.2s
+}
+.header-actions button:hover{color:white;background:#252a31}
+.sidebar{
+    position:absolute;left:0;top:64px;bottom:0;width:190px;
+    background:#0b0e13;border-right:1px solid #252a32;
+    padding:17px 12px;
+}
+.menu{display:flex;flex-direction:column;gap:7px}
+.menu button{
+    height:47px;border:0;border-radius:9px;background:transparent;
+    color:#858c96;text-align:left;padding:0 14px;cursor:pointer;
+    font-size:12px;transition:.2s;display:flex;align-items:center;gap:10px
+}
+.menu button:hover{background:#181c22;color:white}
+.menu button.active{
+    color:white;background:var(--accent);
+    box-shadow:0 5px 20px rgba(255,83,27,.18)
+}
+.menu .icon{width:18px;text-align:center;font-size:16px;flex:none}
+.content{
+    position:absolute;left:190px;right:0;top:64px;bottom:0;
+    padding:24px;overflow:auto;overscroll-behavior:contain;
+}
+.page-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.page-title h2{font-size:20px}
+.status{
+    font-size:9px;color:#67dc91;background:#10281a;
+    border:1px solid #1b5030;padding:7px 11px;border-radius:20px
+}
+.card{
+    background:var(--card);border:1px solid #272d35;border-radius:11px;
+    padding:17px;margin-bottom:13px
+}
+.card-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-title strong{font-size:12px;letter-spacing:.5px}
+.card-title span{color:#626974;font-size:9px}
+.row{
+    min-height:52px;display:flex;justify-content:space-between;align-items:center;
+    gap:20px;border-top:1px solid #22272e
+}
+.row:first-of-type{border-top:0}
+.info span{display:block;font-size:12px}
+.info small{display:block;margin-top:4px;font-size:9px;color:#646c77}
+.switch{
+    width:41px;height:22px;border-radius:20px;background:#2b3038;
+    position:relative;cursor:pointer;flex:none;transition:.2s
+}
+.switch::after{
+    content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;
+    border-radius:50%;background:#777f8a;transition:.2s
+}
+.switch.on{background:var(--accent)}
+.switch.on::after{left:22px;background:#fff}
+select{
+    width:100%;background:#0d1015;color:#aaa;border:1px solid #2b3038;
+    border-radius:7px;padding:11px;outline:none;font-size:12px
+}
+select:focus{border-color:var(--accent)}
+.range-box{margin-top:15px}
+.range-top{display:flex;justify-content:space-between;color:#838a94;font-size:10px;margin-bottom:8px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.save{
+    border:0;color:#fff;background:var(--accent);padding:9px 15px;
+    border-radius:7px;cursor:pointer;font-size:10px
+}
+.save:hover{background:#ff6b34}
+.toast{
+    position:fixed;left:50%;bottom:25px;
+    transform:translateX(-50%) translateY(20px);
+    background:#15191f;border:1px solid #303640;color:#ddd;font-size:11px;
+    padding:11px 18px;border-radius:8px;opacity:0;pointer-events:none;
+    transition:.25s;z-index:9999;white-space:nowrap
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.three-finger-hint{
+    position:fixed;left:50%;top:18px;transform:translateX(-50%);
+    color:#7f8791;font-size:9px;opacity:.7;z-index:2;pointer-events:none
+}
+@media(max-width:650px){
+    .panel{width:94vw;height:530px}
+    .sidebar{width:70px;padding:17px 9px}
+    .menu button{
+        width:52px;height:47px;padding:0;
+        display:flex;align-items:center;justify-content:center;
+        text-align:center
+    }
+    .menu .label{display:none}
+    .menu .icon{font-size:19px;width:auto}
+    .content{left:70px;padding:17px}
+    .brand strong{font-size:13px}
+    .brand small{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+    *{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
+/* KEY GATE */
+.key-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(4,6,9,.84);backdrop-filter:blur(9px);z-index:5000;padding:18px}
+.key-box{width:min(460px,94vw);background:#0f1319;border:1px solid #303640;border-radius:18px;padding:26px;box-shadow:0 25px 90px rgba(0,0,0,.72)}
+.key-logo{width:52px;height:52px;border-radius:13px;display:grid;place-items:center;margin:0 auto 12px;background:linear-gradient(135deg,#ff7c38,#ff3d0d);font-weight:900;font-size:22px;box-shadow:0 0 24px rgba(255,83,27,.28)}
+.key-box h1{text-align:center;font-size:21px;letter-spacing:1.4px}
+.key-box .sub{text-align:center;color:#737b86;font-size:10px;margin:7px 0 20px}
+.key-input{width:100%;background:#090c10;border:1px solid #2b3038;color:#fff;border-radius:9px;padding:13px 14px;outline:none;text-align:center;letter-spacing:1px;font-size:13px;text-transform:uppercase}
+.key-input:focus{border-color:#ff531b}
+.key-row{display:flex;gap:9px;margin-top:10px}
+.key-btn{flex:1;border:0;border-radius:9px;padding:12px;cursor:pointer;font-size:11px}
+.enter-btn{background:#ff531b;color:#fff}.get-btn{background:#1b2027;color:#d7dbe0;border:1px solid #303640}
+.key-msg{min-height:18px;margin-top:11px;font-size:10px;text-align:center}.key-msg.error{color:#ff6b6b}.key-msg.ok{color:#65d990}
+.ad-card{margin-top:18px;border:1px solid #282e37;border-radius:12px;padding:14px;background:#14181e}
+.ad-card h3{font-size:11px;margin-bottom:8px}.ad-card p{font-size:9px;color:#737b86;line-height:1.5}.ad-meta{display:flex;justify-content:space-between;align-items:center;margin-top:11px;color:#888f99;font-size:9px}.ad-count{color:#ff8a60;font-weight:700}.ad-progress{height:5px;border-radius:5px;background:#252b33;overflow:hidden;margin-top:10px}.ad-progress span{display:block;height:100%;width:0%;background:linear-gradient(90deg,#ff531b,#ff9b68);transition:width .2s linear}.ad-done{display:none;margin-top:10px;padding:9px;border-radius:8px;background:#10261a;color:#67dc91;font-size:9px;text-align:center}.ad-done.show{display:block}.get-key-action{margin-top:10px;width:100%;border:0;border-radius:8px;background:#242a32;color:#8c949f;padding:10px;font-size:10px}.get-key-action.ready{background:#ff531b;color:#fff;cursor:pointer}
+</style>
+</head>
+<body>
+
+
+<!-- KEY ACCESS -->
+<div class="key-overlay" id="keyOverlay">
+  <div class="key-box">
+    <div class="key-logo">F</div>
+    <h1>FLOURITE ACCESS</h1>
+    <div class="sub">ENTER YOUR ACCESS KEY</div>
+    <input class="key-input" id="keyInput" type="text" maxlength="32" placeholder="FLR-XXXX-XXXX" autocomplete="off" spellcheck="false">
+    <div class="key-row">
+      <button class="key-btn enter-btn" id="enterKey" type="button">ENTRAR</button>
+      <button class="key-btn get-btn" id="startAd" type="button">OBTENER KEY</button>
+    </div>
+    <div class="key-msg" id="keyMsg"></div>
+    <div class="ad-card">
+      <h3>OBTENER UNA KEY</h3>
+      <p>Completa una cuenta regresiva de demostración para desbloquear una key local. No utiliza una red publicitaria real.</p>
+      <div class="ad-meta"><span>ANUNCIO</span><span class="ad-count" id="adCount">Listo</span></div>
+      <div class="ad-progress"><span id="adProgress"></span></div>
+      <div class="ad-done" id="adDone">✅ Contador completado. Tu key está lista.</div>
+      <button class="get-key-action" id="revealKey" type="button" disabled>COMPLETA EL CONTADOR</button>
+    </div>
+  </div>
+</div>
+
+<button class="open-btn" id="openBtn" type="button" aria-label="Abrir panel">◆</button>
+<div class="three-finger-hint">3 dedos: abrir / cerrar</div>
+
+<div class="panel hidden" id="panel">
+
+    <header class="header" id="dragHeader">
+        <div class="brand">
+            <div class="logo">F</div>
+            <div>
+                <strong>FLOURITE</strong>
+                <small>CONTROL PANEL</small>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <button id="minBtn" type="button" title="Minimizar" aria-label="Minimizar">−</button>
+            <button id="closeBtn" type="button" title="Cerrar" aria-label="Cerrar">×</button>
+        </div>
+    </header>
+
+    <aside class="sidebar">
+        <nav class="menu">
+            <button class="active" data-tab="aimbot" type="button">
+                <span class="icon">◉</span><span class="label">Aimbot</span>
+            </button>
+            <button data-tab="visuals" type="button">
+                <span class="icon">◉</span><span class="label">Visuals</span>
+            </button>
+            <button data-tab="movement" type="button">
+                <span class="icon">↗</span><span class="label">Movement</span>
+            </button>
+            <button data-tab="misc" type="button">
+                <span class="icon">▣</span><span class="label">Misc</span>
+            </button>
+            <button data-tab="settings" type="button">
+                <span class="icon">⚙</span><span class="label">Settings</span>
+            </button>
+        </nav>
+    </aside>
+
+    <main class="content">
+
+        <section class="tab" id="aimbot">
+            <div class="page-title">
+                <h2>Aimbot</h2>
+                <div class="status">● ONLINE</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><strong>AIMBOT</strong><span>OPTIONS</span></div>
+
+                <div class="row">
+                    <div class="info"><span>Aimbot</span><small>Enable option</small></div>
+                    <div class="switch" data-name="Aimbot"></div>
+                </div>
+
+                <div class="row">
+                    <div class="info"><span>Show FOV Circle</span><small>Field of view</small></div>
+                    <div class="switch on" data-name="FOV Circle"></div>
+                </div>
+
+                <div class="row">
+                    <div class="info"><span>Ignore Invisible Targets</span></div>
+                    <div class="switch" data-name="Invisible Targets"></div>
+                </div>
+
+                <div class="row">
+                    <div class="info"><span>Ignore Knocked Targets</span></div>
+                    <div class="switch" data-name="Knocked Targets"></div>
+                </div>
+
+                <div class="row">
+                    <div class="info"><span>Apply Spread</span></div>
+                    <div class="switch" data-name="Apply Spread"></div>
+                </div>
+
+                <div class="row">
+                    <div class="info"><span>Auto Target</span></div>
+                    <div class="switch" data-name="Auto Target"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><strong>AIMING METHOD</strong></div>
+                <select id="method">
+                    <option>Silent Aimbot</option>
+                    <option>Normal Aimbot</option>
+                    <option>FOV Aimbot</option>
+                    <option>Nearest Target</option>
+                </select>
+
+                <div class="range-box">
+                    <div class="range-top"><span>FOV</span><span id="fov">90°</span></div>
+                    <input type="range" min="10" max="180" value="90" id="fovRange">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><strong>HITBOX</strong></div>
+                <select id="hitbox">
+                    <option>Head</option>
+                    <option>Chest</option>
+                    <option>Body</option>
+                    <option>Random</option>
+                </select>
+            </div>
+        </section>
+
+        <section class="tab" id="visuals" hidden>
+            <div class="page-title"><h2>Visuals</h2></div>
+            <div class="card">
+                <div class="card-title"><strong>VISUAL OPTIONS</strong></div>
+
+                <div class="row"><div class="info"><span>ESP</span><small>Player information</small></div><div class="switch" data-name="ESP"></div></div>
+                <div class="row"><div class="info"><span>Player Boxes</span></div><div class="switch" data-name="Player Boxes"></div></div>
+                <div class="row"><div class="info"><span>Distance</span></div><div class="switch" data-name="Distance"></div></div>
+                <div class="row"><div class="info"><span>Health Bar</span></div><div class="switch" data-name="Health Bar"></div></div>
+                <div class="row"><div class="info"><span>Name</span></div><div class="switch" data-name="Name"></div></div>
+                <div class="row"><div class="info"><span>Skeleton</span></div><div class="switch" data-name="Skeleton"></div></div>
+                <div class="row"><div class="info"><span>Outline</span></div><div class="switch" data-name="Outline"></div></div>
+            </div>
+        </section>
+
+        <section class="tab" id="movement" hidden>
+            <div class="page-title"><h2>Movement</h2></div>
+            <div class="card">
+                <div class="card-title"><strong>MOVEMENT OPTIONS</strong></div>
+
+                <div class="row"><div class="info"><span>Back Jump</span><small>Movement option</small></div><div class="switch" data-name="Back Jump"></div></div>
+                <div class="row"><div class="info"><span>Auto Sprint</span></div><div class="switch" data-name="Auto Sprint"></div></div>
+                <div class="row"><div class="info"><span>Fast Switch</span></div><div class="switch" data-name="Fast Switch"></div></div>
+                <div class="row"><div class="info"><span>Jump Assist</span></div><div class="switch" data-name="Jump Assist"></div></div>
+                <div class="row"><div class="info"><span>Slide Control</span></div><div class="switch" data-name="Slide Control"></div></div>
+                <div class="row"><div class="info"><span>Air Control</span></div><div class="switch" data-name="Air Control"></div></div>
+            </div>
+        </section>
+
+        <section class="tab" id="misc" hidden>
+            <div class="page-title"><h2>Misc</h2></div>
+            <div class="card">
+                <div class="card-title"><strong>MISC OPTIONS</strong></div>
+
+                <div class="row"><div class="info"><span>Crosshair</span></div><div class="switch on" data-name="Crosshair"></div></div>
+                <div class="row"><div class="info"><span>FPS Counter</span></div><div class="switch" data-name="FPS Counter"></div></div>
+                <div class="row"><div class="info"><span>Stream Mode</span></div><div class="switch" data-name="Stream Mode"></div></div>
+                <div class="row"><div class="info"><span>Performance Mode</span></div><div class="switch" data-name="Performance Mode"></div></div>
+                <div class="row"><div class="info"><span>Auto Start</span></div><div class="switch" data-name="Auto Start"></div></div>
+                <div class="row"><div class="info"><span>Watermark</span></div><div class="switch" data-name="Watermark"></div></div>
+            </div>
+        </section>
+
+        <section class="tab" id="settings" hidden>
+            <div class="page-title"><h2>Settings</h2></div>
+
+            <div class="card">
+                <div class="card-title"><strong>APPEARANCE</strong></div>
+
+                <div class="row">
+                    <div class="info"><span>Rainbow</span><small>Change panel border color</small></div>
+                    <div class="switch" id="rainbowSwitch" data-name="Rainbow"></div>
+                </div>
+
+                <div class="row">
+                    <div class="info"><span>Animations</span></div>
+                    <div class="switch on" data-name="Animations"></div>
+                </div>
+
+                <div class="row">
+                    <div class="info"><span>Dark Mode</span></div>
+                    <div class="switch on" data-name="Dark Mode"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><strong>CONFIGURATION</strong></div>
+
+                <div class="row">
+                    <div class="info"><span>Save Settings</span><small>Save current interface settings</small></div>
+                    <button class="save" id="saveBtn" type="button">SAVE</button>
+                </div>
+
+                <div class="row">
+                    <div class="info"><span>Reset Settings</span><small>Restore default layout</small></div>
+                    <button class="save" id="resetBtn" type="button">RESET</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<div class="toast" id="toast" aria-live="polite"></div>
+
+<script>
+(() => {
+    "use strict";
+
+    const panel = document.getElementById("panel");
+    const openBtn = document.getElementById("openBtn");
+    const closeBtn = document.getElementById("closeBtn");
+    const minBtn = document.getElementById("minBtn");
+    const header = document.getElementById("dragHeader");
+    const toast = document.getElementById("toast");
+    const rainbowSwitch = document.getElementById("rainbowSwitch");
+    const fovRange = document.getElementById("fovRange");
+    const fov = document.getElementById("fov");
+    const method = document.getElementById("method");
+    const hitbox = document.getElementById("hitbox");
+    const saveBtn = document.getElementById("saveBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    let toastTimer = null;
+    let dragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+    let threeFingerTriggered = false;
+
+    function showToast(message) {
+        toast.textContent = String(message);
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 1500);
+    }
+
+    /* Tabs */
+    document.querySelectorAll(".menu button").forEach(button => {
+        button.addEventListener("click", () => {
+            document.querySelectorAll(".menu button").forEach(b => b.classList.remove("active"));
+            button.classList.add("active");
+            const target = button.dataset.tab;
+            document.querySelectorAll(".tab").forEach(tab => {
+                tab.hidden = tab.id !== target;
+            });
+        });
+    });
+
+    /* Switches */
+    document.querySelectorAll(".switch").forEach(sw => {
+        sw.addEventListener("click", () => {
+            const enabled = sw.classList.toggle("on");
+            const name = sw.dataset.name || "Opción";
+
+            if (name === "Rainbow") {
+                panel.classList.toggle("rainbow", enabled);
+            }
+
+            showToast(name + ": " + (enabled ? "Activado" : "Desactivado"));
+        });
+    });
+
+    /* Sliders/selects */
+    fovRange.addEventListener("input", () => {
+        let value = Number(fovRange.value);
+        if (!Number.isFinite(value)) value = 90;
+        value = Math.max(10, Math.min(180, value));
+        fovRange.value = String(value);
+        fov.textContent = value + "°";
+    });
+
+    method.addEventListener("change", e => showToast("Método: " + e.target.value));
+    hitbox.addEventListener("change", e => showToast("Hitbox: " + e.target.value));
+
+    /* Open/close/minimize */
+    openBtn.addEventListener("click", () => {
+        panel.classList.remove("hidden");
+    });
+
+    closeBtn.addEventListener("click", e => {
+        e.stopPropagation();
+        panel.classList.add("hidden");
+        panel.classList.remove("minimized");
+        minBtn.textContent = "−";
+    });
+
+    minBtn.addEventListener("click", e => {
+        e.stopPropagation();
+        const minimized = panel.classList.toggle("minimized");
+        minBtn.textContent = minimized ? "+" : "−";
+    });
+
+    saveBtn.addEventListener("click", () => showToast("Configuración guardada"));
+
+    resetBtn.addEventListener("click", () => {
+        document.querySelectorAll(".switch").forEach(sw => sw.classList.remove("on"));
+
+        document.querySelector('[data-name="FOV Circle"]')?.classList.add("on");
+        document.querySelector('[data-name="Crosshair"]')?.classList.add("on");
+        document.querySelector('[data-name="Animations"]')?.classList.add("on");
+        document.querySelector('[data-name="Dark Mode"]')?.classList.add("on");
+
+        rainbowSwitch.classList.remove("on");
+        panel.classList.remove("rainbow");
+
+        fovRange.value = "90";
+        fov.textContent = "90°";
+        method.selectedIndex = 0;
+        hitbox.selectedIndex = 0;
+
+        showToast("Configuración restablecida");
+    });
+
+    /* Drag with pointer events */
+    header.addEventListener("pointerdown", e => {
+        if (e.target.closest("button")) return;
+
+        const rect = panel.getBoundingClientRect();
+        dragging = true;
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+
+        panel.style.transform = "none";
+        panel.style.left = rect.left + "px";
+        panel.style.top = rect.top + "px";
+
+        try { header.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+
+    header.addEventListener("pointermove", e => {
+        if (!dragging) return;
+
+        let x = e.clientX - offsetX;
+        let y = e.clientY - offsetY;
+
+        const maxX = Math.max(0, window.innerWidth - panel.offsetWidth);
+        const maxY = Math.max(0, window.innerHeight - panel.offsetHeight);
+
+        x = Math.max(0, Math.min(x, maxX));
+        y = Math.max(0, Math.min(y, maxY));
+
+        panel.style.left = x + "px";
+        panel.style.top = y + "px";
+    });
+
+    function stopDrag(e) {
+        dragging = false;
+        try { header.releasePointerCapture(e.pointerId); } catch (_) {}
+    }
+
+    header.addEventListener("pointerup", stopDrag);
+    header.addEventListener("pointercancel", stopDrag);
+
+    /* 3-finger open/close gesture */
+    function toggleByThreeFingers() {
+        if (threeFingerTriggered) return;
+        threeFingerTriggered = true;
+
+        if (panel.classList.contains("hidden")) {
+            panel.classList.remove("hidden");
+            showToast("Panel abierto");
+        } else {
+            panel.classList.add("hidden");
+            panel.classList.remove("minimized");
+            minBtn.textContent = "−";
+            showToast("Panel cerrado");
+        }
+    }
+
+    document.addEventListener("touchstart", e => {
+        if (e.touches.length === 3) toggleByThreeFingers();
+    }, {passive:true});
+
+    document.addEventListener("touchend", e => {
+        if (e.touches.length < 3) threeFingerTriggered = false;
+    }, {passive:true});
+
+    document.addEventListener("touchcancel", () => {
+        threeFingerTriggered = false;
+    }, {passive:true});
+})();
+</script>
+
+<script>
+(() => {
+  "use strict";
+  const VALID_KEYS = new Set([
+    "FLR-DEMO-2026",
+    "FLR-ORANGE-777",
+    "FLR-RNBW-999",
+    "FLR-FANS-123",
+    "FLR-PANEL-888"
+  ]);
+  const overlay=document.getElementById("keyOverlay");
+  const input=document.getElementById("keyInput");
+  const enter=document.getElementById("enterKey");
+  const start=document.getElementById("startAd");
+  const reveal=document.getElementById("revealKey");
+  const msg=document.getElementById("keyMsg");
+  const count=document.getElementById("adCount");
+  const progress=document.getElementById("adProgress");
+  const done=document.getElementById("adDone");
+  let timer=null, secs=0;
+  function message(t,k=""){msg.textContent=t;msg.className="key-msg "+k}
+  function unlock(){const key=String(input.value||"").trim().toUpperCase(); if(!VALID_KEYS.has(key)){message("Key incorrecta.","error");return} overlay.style.display="none"; document.getElementById("panel").classList.remove("hidden"); message("Key válida.","ok")}
+  enter.addEventListener("click",unlock);
+  input.addEventListener("keydown",e=>{if(e.key==="Enter")unlock()});
+  start.addEventListener("click",()=>{
+    if(timer)return; secs=10; count.textContent="10s"; progress.style.width="0%"; done.classList.remove("show"); reveal.disabled=true; reveal.classList.remove("ready"); reveal.textContent="COMPLETA EL CONTADOR"; start.disabled=true; start.style.opacity=".55";
+    timer=setInterval(()=>{secs-=1; count.textContent=secs>0?secs+"s":"LISTO"; progress.style.width=((10-secs)/10*100)+"%"; if(secs<=0){clearInterval(timer);timer=null;done.classList.add("show");reveal.disabled=false;reveal.classList.add("ready");reveal.textContent="MOSTRAR KEY";start.disabled=false;start.style.opacity="1"}},1000);
+  });
+  reveal.addEventListener("click",()=>{if(reveal.disabled)return; input.value="FLR-DEMO-2026"; message("Key generada: FLR-DEMO-2026","ok")});
+})();
+</script>
+</body>
+</html>
